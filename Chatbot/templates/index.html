@@ -1,0 +1,266 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اسلامی چیٹ بوٹ</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+
+    <style>
+        .lang-switcher {
+            display: inline-block;
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .lang-switcher select {
+            font-size: 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            direction: rtl;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- History Tab -->
+        <div class="history">
+            <!-- History Navbar -->
+            <nav class="navbar-history">
+                <!-- Logo and Text -->
+                <div class="navbar-logo">
+                    <img src="{% static 'images/ilmseekh-logo.svg' %}" alt="Logo" class="logo"/>
+                    <span>علم سیکھ</span>
+                </div>
+            </nav>
+
+            <!-- History List -->
+            {% comment %} <ul id="historyList"></ul> {% endcomment %}
+        </div>
+
+        <!-- Chatbot Interface -->
+        <div class="chatbot">
+            <!-- Navigation Bar -->
+            <nav class="navbar">
+                <div class="navbar-logo">علم سیکھ</div>
+                <div class="navbar-items">
+                    <div class="lang-switcher">
+                    <select onchange="translateLang(this.value)">
+                        <option value="ur">اردو</option>
+                        <option value="en">English</option>
+                        <option value="ar">العربية</option>
+                    </select>
+                    </div>
+
+                    <!-- Google Translate Element (hidden, just to load script) -->
+                    <div id="google_translate_element" style="display:none;"></div>
+
+                    <script>
+                    function googleTranslateElementInit() {
+                        new google.translate.TranslateElement({
+                        pageLanguage: 'ur',
+                        includedLanguages: 'en,ur,ar',
+                        autoDisplay: false
+                        }, 'google_translate_element');
+                    }
+
+                    function translateLang(lang) {
+                        // Get the Google Translate dropdown and trigger language change without reloading
+                        const select = document.querySelector('#google_translate_element select.goog-te-combo');
+                        if (select) {
+                            select.value = lang;
+                            select.dispatchEvent(new Event('change'));
+                        }
+                    }
+                    </script>
+
+                    <!-- Google Translate Script -->
+                    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+
+                    <!-- User Dropdown -->
+                    <div class="user-dropdown">
+                        <button class="user-login" onclick="toggleDropdown()">
+                            <img src="{% static 'images/login-icon.svg' %}" alt="User Login" class="login-svg"/>
+                        </button>
+                        <div class="dropdown-content hidden" id="dropdownMenu">
+                            {% if request.user.is_authenticated %}
+                                <div class="dropdown-username">{{ request.user.first_name }}</div>
+                                <form method="POST" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-btn">Logout</button>
+                                </form>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="dropdown-btn">Login</a>
+                                <a href="{% url 'register' %}" class="dropdown-btn">Register</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+
+                    
+                </div>
+            </nav>
+            
+            <!-- Welcome Prompt -->
+            <div class="welcome-prompt" id="welcomePrompt">
+                <h2 class="welcome-heading">میں کس چیز میں مدد کر سکتا ہوں؟</h2>
+                <div class="input-area hidden1" id="inputArea">
+                    <button onclick="sendQuery()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
+                        </svg>
+                    </button>
+                    <input type="text" id="userInput" placeholder=".......کچھ بھی پوچھو">
+                    
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="chat-area hidden" id="chatArea"></div>
+
+            <!-- Input Area -->
+            <div class="input-area-bottom hidden" id="bottomInputArea">
+                <button onclick="sendQuery()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
+                    </svg>
+                </button>
+                <input type="text" id="userInputBottom" placeholder=".......کچھ بھی پوچھو">
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function sendQuery() {
+            const userInputTop = document.getElementById('userInput');
+            const userInputBottom = document.getElementById('userInputBottom');
+            const chatArea = document.getElementById('chatArea');
+            const welcomePrompt = document.getElementById('welcomePrompt');
+            const bottomInputArea = document.getElementById('bottomInputArea');
+
+            const userInput = userInputTop.value.trim() || userInputBottom.value.trim();
+
+            if (userInput === '') {
+                alert("براہ کرم سوال درج کریں۔");
+                return;
+            }
+
+            // Show chat area and hide welcome prompt
+            if (welcomePrompt) {
+                welcomePrompt.classList.add('hidden');
+                chatArea.classList.remove('hidden');
+                bottomInputArea.classList.remove('hidden');
+            }
+
+            try {
+                // Append user query to chat
+                appendMessage("user", userInput);
+
+                // Send query to Django backend
+                const csrfToken = "{{ csrf_token }}";
+                const response = await fetch("{% url 'chatbot_view' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken
+                    },
+                    body: JSON.stringify({ query: userInput })
+                });
+
+                const data = await response.json();
+
+                // Append bot response
+                if (data.response && data.response.length > 0) {
+                    const combinedResponse = data.response.join("\n\n"); // join with newlines first
+                    const htmlResponse = combinedResponse.replace(/\n/g, "<br>");
+                    appendMessage("bot", htmlResponse);
+                } else {
+                    appendMessage("bot", "معاف کیجیے گا، کوئی جواب دستیاب نہیں۔");
+                }
+
+                // Update chat history
+                // updateHistory(userInput); // 🚫 Commented out
+            } catch (error) {
+                appendMessage("bot", "معاف کیجیے گا، کوئی خرابی پیش آگئی ہے۔");
+            }
+
+            // Clear input fields
+            userInputTop.value = '';
+            userInputBottom.value = '';
+        }
+
+        function appendMessage(sender, message) {
+            const chatArea = document.getElementById('chatArea');
+            const messageElement = document.createElement('div');
+            messageElement.className = sender === "user" ? "user-message" : "bot-message";
+            messageElement.innerHTML = message; 
+            chatArea.appendChild(messageElement);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // 🚫 Entire history update function commented out
+        /*
+        function updateHistory(userQuery) {
+            const historyList = document.getElementById('historyList');
+            const newHistoryItem = document.createElement('li');
+            newHistoryItem.innerText = userQuery;
+            newHistoryItem.onclick = () => {
+                document.getElementById('userInput').value = newHistoryItem.innerText;
+            };
+            historyList.appendChild(newHistoryItem);
+        }
+        */
+
+        document.getElementById('userInput').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                sendQuery();
+            }
+        });
+
+        document.getElementById('userInputBottom').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                sendQuery();
+            }
+        });
+
+
+
+        
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.classList.toggle('hidden');
+        }
+        
+        // Close dropdown on outside click
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('dropdownMenu');
+            const button = document.querySelector('.user-login');
+            if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Delegate click for reference links
+        document.addEventListener('click', function(event) {
+            if (event.target && event.target.classList.contains('reference-link')) {
+                event.preventDefault();
+                const query = event.target.getAttribute('data-query');
+                if (query) {
+                    document.getElementById('userInput').value = query;
+                    document.getElementById('userInputBottom').value = query;
+                    sendQuery(); 
+                }
+            }
+        });
+
+        
+    </script>
+</body>
+</html>

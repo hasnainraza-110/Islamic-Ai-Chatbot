@@ -1,0 +1,130 @@
+/* General Styling */
+body {
+    font-family: Arial, sans-serif;
+    background: #0c4c43;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    width: 50%;
+}
+
+.form-box {
+    background: white;
+    padding: 3rem 6rem;
+    border-radius: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+}
+
+/* Back Button */
+.back-btn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+}
+
+.back-btn img {
+    width: 40px;
+    cursor: pointer;
+}
+
+/* Title */
+h2 {
+    color: #0c4c43;
+    margin-bottom: 3rem;
+    margin-top: 0;
+    font-size: 48px;
+}
+
+/* Input Fields */
+.input-group {
+    position: relative;
+    margin-bottom: 15px;
+}
+.email-group{
+    display: flex;
+    margin-bottom: 15px;
+}
+
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+.email-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.password-group {
+    display: flex;
+    align-items: center;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+}
+
+/* Buttons */
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.signin-btn {
+    background: #0c4c43;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.register-btn {
+    background: #ddd;
+    color: black;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 20px;
+}
+
+/* Google Sign-In */
+.google-signin {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 60px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.google-signin img {
+    width: 30px;
+}
+/* Error message */
+.error{
+    color: red;
+}

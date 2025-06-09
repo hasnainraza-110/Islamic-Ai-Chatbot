@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">
+            <img src="{% static 'images/ilmseekh-logo.svg' %}" alt="Logo">
+            <span>علم سیکھ</span>
+        </div>
+        <div class="nav-buttons">
+            {% if user.is_authenticated %}
+                <span class="username">Welcome, {{ user.first_name }}!</span>
+            {% else %}
+                <a href="{% url 'login' %}" class="login-btn">Login</a>
+                <a href="{% url 'register' %}" class="signup-btn">Signup</a>
+            {% endif %}
+        </div>
+        
+    </header>
+
+    <section class="hero" style="background: url('{% static "images/home-first-banner.jpg" %}') no-repeat center center/cover;">
+        <div class="hero-content">
+            <h1>Discover Authentic Islamic Knowledge at <br>Your Fingertips</h1>
+            <p>
+                Welcome to the Islamic Chatbot! Get reliable answers to your questions 
+                about Fatwas and prayer sourced from authentic texts. 
+                Experience trusted knowledge at your fingertips and deepen your understanding of Islam.
+            </p>
+            <button class="get-started-btn" onclick="location.href='{% url 'index' %}'">Get Started</button>
+        </div>
+        
+    </section>
+
+</body>
+</html>
