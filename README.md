@@ -10,3 +10,5 @@ install Oracle JDK in the app folder aichatbot/
 
 To run the installation:
 pip install django owlready2 scikit-learn LughaatNLP
+
+Enjoy the Islamic query chatbot
